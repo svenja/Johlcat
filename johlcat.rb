@@ -18,19 +18,20 @@ require 'lolspeak'
 
 screen_name = 'johlcat' # the one and original, the target account
 password = '***'
-# this is supposed to be an hourly cronjob, feel free to change the amount of minutes!
-$onehourago = Time.at(Time.now.to_i - 3600) # 1 hour ago
+# this is supposed to be an 5 minutly cronjob, feel free to change the amount of minutes!
+$fiveminsago = Time.at(Time.now.to_i - 300) # 5 minutes ago
 
 httpauth = Twitter::HTTPAuth.new( screen_name, password, @options = { :ssl => true })
 client = Twitter::Base.new(httpauth)
 
-client.user_timeline( :screen_name => 'retweeted_screen_name' ).reverse.each do | tweet |
-	# for testing purposes...
-	#puts "OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))
-	begin
-		client.update("OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))) if Time.parse(tweet.created_at) > $onehourago
-	rescue Twitter::Unavailable, Twitter::InformTwitter, OpenSSL::SSL::SSLError, Errno::ETIMEDOUT => error
-		sleep(60) # wait for 60 seconds then retry
-		retry
-	end	
+# for testing purposes...
+#puts "OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))
+begin
+	client.user_timeline( :screen_name => 'retweeted_screen_name' ).reverse.each do | tweet |
+		client.update("OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))) if Time.parse(tweet.created_at) > $fiveminsago
+	end
+rescue Twitter::Unavailable, Twitter::InformTwitter, OpenSSL::SSL::SSLError, Errno::ETIMEDOUT => error
+	sleep(60) # wait for 60 seconds then retry
+	retry
 end	
+
