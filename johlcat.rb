@@ -27,5 +27,10 @@ client = Twitter::Base.new(httpauth)
 client.user_timeline( :screen_name => 'retweeted_screen_name' ).reverse.each do | tweet |
 	# for testing purposes...
 	#puts "OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))
-	client.update("OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))) if Time.parse(tweet.created_at) > $onehourago
-end
+	begin
+		client.update("OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))) if Time.parse(tweet.created_at) > $onehourago
+	rescue Twitter::Unavailable, Twitter::InformTwitter, OpenSSL::SSL::SSLError, Errno::ETIMEDOUT => error
+		sleep(60) # wait for 60 seconds then retry
+		retry
+	end	
+end	
