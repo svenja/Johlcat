@@ -16,14 +16,42 @@ gem 'twitter'
 require 'twitter'
 require 'lolspeak'
 
-screen_name = 'johlcat' # the one and original, the target account
-password = '***'
 # this is supposed to be an 5 minutly cronjob, feel free to change the amount of minutes!
 $fiveminsago = Time.at(Time.now.to_i - 300) # 5 minutes ago
 
-httpauth = Twitter::HTTPAuth.new( screen_name, password, @options = { :ssl => true })
-client = Twitter::Base.new(httpauth)
+# The OAuth stuff follows...
+require 'yaml'
+begin 
+  config = YAML.load_file("secret.yaml")
+  @oauth_token = config["oauth_token"]
+  @oauth_token_secret = config["oauth_token_secret"]
+  @api_key = config["api_key"]
+  @api_secret = config["api_secret"]
+rescue
+  # Fill in your data for your own bot here here
+  @oauth_token = ""
+  @oauth_token_secret = ""
+  @api_key = ""
+  @api_secret = ""
+end
 
+def prepare_access_token(oauth_token, oauth_token_secret)
+  consumer = OAuth::Consumer.new(@api_key, @api_secret,
+    { :site => "http://api.twitter.com",
+      :scheme => :header
+    })
+  # now create the access token object from passed values
+  token_hash = { :oauth_token => oauth_token,
+                 :oauth_token_secret => oauth_token_secret
+               }
+  access_token = OAuth::AccessToken.from_hash(consumer, token_hash )
+  return access_token
+end
+
+oauth = prepare_access_token(@oauth_token, @oauth_token_secret)
+client = Twitter::Base.new(oauth)
+
+# Back to our regular Johlcat...
 # for testing purposes...
 #puts "OH HAI ".concat(tweet.text.to_lolspeak.upcase.delete('@'))
 begin
